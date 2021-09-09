@@ -60,7 +60,7 @@ namespace Transporte
                         transportes.Add(omnibus);
                     }
 
-                    dgvTransporte.DataSource = transportes.OrderBy(x=>x.TipoTransporte()).ToList();
+                    dgvTransporte.DataSource = transportes.OrderBy(x=>x.TipoTransporte).ToList();
 
                     tbxCantidadPasajeros.Focus();
                     tbxCantidadPasajeros.SelectAll();
@@ -75,8 +75,8 @@ namespace Transporte
 
         private int CantidadTotalTransportesPorTipo(string tipoTransporte) 
         {
-            var cantidadTotalTransportesPorTipo = transportes.Where(t => t.TipoTransporte() == tipoTransporte)
-                                                        .Select(t => t.TipoTransporte())
+            var cantidadTotalTransportesPorTipo = transportes.Where(t => t.TipoTransporte == tipoTransporte)
+                                                        .Select(t => t.TipoTransporte)
                                                         .Count();
 
             return cantidadTotalTransportesPorTipo;
