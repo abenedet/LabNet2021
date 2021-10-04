@@ -9,9 +9,11 @@ namespace NorthwindEF.Presentation
     {
         private ShippersLogic shippersLogic = new ShippersLogic();
         private SuppliersLogic suppliersLogic = new SuppliersLogic();
-        private enum TipoOperacion { Alta, Modificacion};
 
-        private TipoOperacion tipoOperacionSeleccionada; 
+        private CustomersLogic customersLogic = new CustomersLogic();
+        private ProductsLogic productsLogic = new ProductsLogic();
+        private CategoriesLogic categoriesLogic = new CategoriesLogic(); 
+        private enum Region { WA };        
 
         public FrmNorthwind()
         {
@@ -20,114 +22,203 @@ namespace NorthwindEF.Presentation
 
         private void FrmNorthwind_Load(object sender, EventArgs e)
         {
-            dgvTransportes.DataSource = shippersLogic.GetShipperList();
-            dgvProveedores.DataSource = suppliersLogic.GetSuppliersList();
+
         }
 
-        private void btnGuardarTransporte_Click(object sender, EventArgs e)
+        private void btnEj1_Click(object sender, EventArgs e)
         {
             try
             {
-                var newShipper = new Shippers();
-                newShipper.CompanyName = tbxNombreTransporte.Text;
-                newShipper.Phone = tbxTelefono.Text;
-                
-                if (tipoOperacionSeleccionada == TipoOperacion.Alta)
-                {                  
-                    shippersLogic.Add(newShipper);
+                var customer = customersLogic.GetFirstOrNullCustomer();
+                if (customer != null)
+                {
+                    MessageBox.Show(string.Format("ID: {0} - Company Name: {1} - Contact Name: {2} - Contact Title: {3} - Address: {4} - " +
+                                                  "City: {5} - Region: {6} - Postal Code: {7} - Country: {8} - Phone: {9} - Fax: {10}",
+                                                    customer.CustomerID, customer.CompanyName, customer.ContactName, customer.ContactTitle, customer.Address,
+                                                    customer.City, customer.Region, customer.PostalCode, customer.Country, customer.Phone, customer.Fax));
                 }
                 else 
                 {
-                    var filaSeleccionada = (dgvTransportes.SelectedRows[0]);
-                    var idShipper = Convert.ToInt32(filaSeleccionada.Cells[0].Value);
-                    newShipper.ShipperID = idShipper;
-                    shippersLogic.Update(newShipper);
+                    MessageBox.Show("No existen Customers");     
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener Customer {0}", ex.Message));
+            }
+        }
 
-                    HabilitarDeshabilitarGbxTransporte(false);
-                    HabilitarDeshabilitarBotonesTransporte(true);
+        private void btnEj2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                dgvResultados.DataSource = productsLogic.GetAllProductsWithoutStock();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener Productos {0}", ex.Message));
+            }
+
+        }
+
+        private void btnEj3_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                dgvResultados.DataSource = productsLogic.GetProductsWithStockAndPriceMoreThan(3);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener Productos {0}", ex.Message));
+            }
+        }
+
+        private void btnEj4_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                dgvResultados.DataSource = customersLogic.GetCustomersByRegion(Region.WA.ToString());
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener Customers {0}", ex.Message));
+            }
+        }
+
+        private void btnEj5_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var product = productsLogic.GetProductByID(789);
+
+                if (product != null)
+                {
+                    dgvResultados.DataSource = productsLogic.GetProductByID(789);
+                }
+                else 
+                {
+                    MessageBox.Show("No existen productos con el ID: 789");
                 }
 
-                dgvTransportes.DataSource = shippersLogic.GetShipperList();
-                LimpiarControlesTransporte();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(string.Format("No se han podido guardar los datos del transporte, ha ocurrido el siguiente error: {0}", ex.Message));
+                MessageBox.Show(string.Format("Error al intentar obtener Producto {0}", ex.Message));
             }
         }
 
-        private void LimpiarControlesTransporte() 
-        {
-            tbxNombreTransporte.Clear();
-            tbxTelefono.Clear();
-            tbxNombreTransporte.Focus();
-        }
-
-        private void HabilitarDeshabilitarBotonesTransporte(bool enabled) 
-        {
-            btnAgregarTransporte.Enabled = enabled;
-            btnModificarTransporte.Enabled = enabled;
-            btnEliminarTransporte.Enabled = enabled;
-        }
-
-        private void HabilitarDeshabilitarGbxTransporte(bool enabled) 
-        {
-            gbxTransporte.Enabled = enabled;        
-        }
-
-        private void btnAgregarTransporte_Click(object sender, EventArgs e)
-        {
-            HabilitarDeshabilitarGbxTransporte(true);
-            HabilitarDeshabilitarBotonesTransporte(false);
-            tipoOperacionSeleccionada = TipoOperacion.Alta;
-        }
-
-        private void btnCancelarTransporte_Click(object sender, EventArgs e)
-        {
-            LimpiarControlesTransporte();
-            HabilitarDeshabilitarGbxTransporte(false);
-            HabilitarDeshabilitarBotonesTransporte(true);
-        }
-
-        private void btnModificarTransporte_Click(object sender, EventArgs e)
-        {
-            HabilitarDeshabilitarGbxTransporte(true);
-            HabilitarDeshabilitarBotonesTransporte(false);
-            tipoOperacionSeleccionada = TipoOperacion.Modificacion;
-            MostrarDatosTransporte();
-        }
-
-        private void btnEliminarTransporte_Click(object sender, EventArgs e)
+        private void btnEj6_Click(object sender, EventArgs e)
         {
             try
             {
-                var filaSeleccionada = (dgvTransportes.SelectedRows[0]);
-                var idShipper = Convert.ToInt32(filaSeleccionada.Cells["IDTransporte"].Value);
-                shippersLogic.Delete(idShipper);
+                var names = string.Empty;
 
-                dgvTransportes.DataSource = shippersLogic.GetShipperList();
-                MessageBox.Show(string.Format("Transporte eliminado con éxito!"));
+                if (rbtnMinusculas.Checked)
+                {
+                    var customersList = customersLogic.GetCustomersNames(true);
+                    foreach (var customer in customersList) 
+                    {
+                        names += string.Format(customer);
+                    }
+
+                    MessageBox.Show(names);
+                }
+                else if (rbtnMayusculas.Checked)
+                {
+                    var customersList = customersLogic.GetCustomersNames(false);
+                    foreach (var customer in customersList)
+                    {
+                        names += string.Format(customer);
+                    }
+
+                    MessageBox.Show(names);
+                }
+                else 
+                {
+                    MessageBox.Show(string.Format("Seleccione una opción por favor"));
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(string.Format("No se ha podido eliminar el transporte, ha ocurrido el siguiente error: {0}", ex.Message));
+                MessageBox.Show(string.Format("Error al intentar obtener Customers {0}", ex.Message));
             }
         }
 
-        private void MostrarDatosTransporte() 
+        private void btnEj7_Click(object sender, EventArgs e)
+        {
+            try
+            {                
+                dgvResultados.DataSource = customersLogic.GetCustomerByRegionAndOrderGreaterThan(Region.WA.ToString(), Convert.ToDateTime("01/01/1997"));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener Customers {0}", ex.Message));
+            }
+        }
+
+        private void btnEj8_Click(object sender, EventArgs e)
         {
             try
             {
-                var filaSeleccionada = (dgvTransportes.SelectedRows[0]);
-                tbxNombreTransporte.Text = filaSeleccionada.Cells["CompanyNameTransporte"].Value.ToString();
-                tbxTelefono.Text = filaSeleccionada.Cells["PhoneTransporte"].Value.ToString();
-                tbxNombreTransporte.SelectAll();
-                tbxNombreTransporte.Focus();
+                dgvResultados.DataSource = customersLogic.GetCustomersByRegionAndFirstNumbers(Region.WA.ToString(), 3);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener Customers {0}", ex.Message));
+            }
+        }
+
+        private void btnEj9_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                dgvResultados.DataSource = productsLogic.GetProductsOrderByName();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener Productos {0}", ex.Message));
+            }
+        }
+
+        private void btnEj10_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                dgvResultados.DataSource = productsLogic.GetProductsOrderByUnitStockDesc();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener Productos {0}", ex.Message));
+            }
+        }
+
+        private void btnEj11_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                dgvResultados.DataSource = categoriesLogic.GetDistinctCategories();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error al intentar obtener CAtegorias {0}", ex.Message));
+            }
+        }
+
+        private void btnEj12_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var product = productsLogic.GetFirstProduct();
+                MessageBox.Show(string.Format("ID: {0} - Product Name: {1} - Quantity Per Unit: {2} - Unit Price: {3}- " +
+                                                "Unit In Stock: {4} - Units On Order: {5} - Reorder Level: {6} - Discontinued: {7}",
+                                                product.ProductID, product.ProductName, product.QuantityPerUnit, product.UnitPrice, 
+                                                product.UnitsInStock, product.UnitsOnOrder, product.ReorderLevel, product.Discontinued));
 
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                MessageBox.Show(string.Format("No se han podido mostrar los datos del transporte seleccionado, ha ocurrido el siguiente error: {0}", ex.Message));
+                MessageBox.Show(string.Format("Error al intentar obtener Productos {0}", ex.Message));
             }
         }
     }
